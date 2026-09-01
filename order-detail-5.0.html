@@ -1,13 +1,1390 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="refresh" content="0; url=demo%E6%96%87%E4%BB%B6/09-01-%E8%AE%A2%E5%8D%95%E8%AF%A6%E6%83%85%E9%A1%B55.0/%E8%AE%A2%E5%8D%95%E8%AF%A6%E6%83%85%E9%A1%B55.0.html">
-  <title>订单详情页 5.0</title>
-  <script>location.replace('demo%E6%96%87%E4%BB%B6/09-01-%E8%AE%A2%E5%8D%95%E8%AF%A6%E6%83%85%E9%A1%B55.0/%E8%AE%A2%E5%8D%95%E8%AF%A6%E6%83%85%E9%A1%B55.0.html')</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>订单详情页5.0</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    background: #f5f5f5;
+    display: flex;
+    justify-content: center;
+  }
+  .phone {
+    width: 375px;
+    background: #f5f5f5;
+    min-height: 812px;
+    position: relative;
+  }
+  .prototype-shell {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 24px 0;
+  }
+
+  /* 状态栏 */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 20px 4px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    background: #f5f5f5;
+  }
+  .status-bar .icons { display: flex; align-items: center; gap: 5px; }
+  .status-bar svg { display: block; }
+
+  /* 导航栏 */
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px 14px;
+    background: #f5f5f5;
+  }
+  .nav-bar .back {
+    font-size: 22px;
+    color: #333;
+    width: 32px;
+  }
+  .nav-bar .title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+  .nav-bar .service {
+    width: 32px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /* 美柚 logo pill (fake status bar center icon) */
+  .app-badge {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 3px 10px 3px 3px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+  }
+  .app-badge .icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#ff6fa1,#ff3d71);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+
+  /* section title */
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a1a;
+    padding: 6px 16px 14px;
+  }
+
+  /* 原型场景切换 */
+  .scenario-switcher {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+    width: 220px;
+    margin: 0;
+    padding: 4px;
+    border-radius: 10px;
+    background: #ececee;
+  }
+  .scenario-option {
+    flex: 1;
+    height: 36px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #666;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .scenario-option.active {
+    background: #fff;
+    color: #ff3d71;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+  .scene-one-sub-switcher,
+  .scene-two-sub-switcher,
+  .scene-three-sub-switcher,
+  .scene-four-sub-switcher {
+    display: none;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 8px;
+    background: #f7f7f8;
+  }
+  body.scene-one .scene-one-sub-switcher { display: flex; }
+  body.scene-two .scene-two-sub-switcher { display: flex; }
+  body.scene-three .scene-three-sub-switcher { display: flex; }
+  body.scene-four .scene-four-sub-switcher { display: flex; }
+  .scene-one-sub-option,
+  .scene-two-sub-option,
+  .scene-three-sub-option,
+  .scene-four-sub-option {
+    flex: 1;
+    min-height: 32px;
+    padding: 0 6px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #777;
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1.2;
+  }
+  .scene-one-sub-option.active,
+  .scene-two-sub-option.active,
+  .scene-three-sub-option.active,
+  .scene-four-sub-option.active {
+    background: #fff;
+    color: #ff3d71;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+  .scene-two-sub-switcher { flex-wrap: wrap; }
+  .scene-two-sub-option { flex: 1 1 calc(50% - 2px); }
+  .scene-four-only { display: none; }
+  body.scene-four .scene-four-only { display: block; }
+  body.scene-four .standard-order,
+  body.scene-four .bottom-bar,
+  body.scene-four .status-bar,
+  body.scene-four .nav-bar { display: none; }
+  .scene-four-closed-only { display: none; }
+  body.scene-four:not(.scene-four-closed) .scene-four-closed-only { display: none; }
+  body.scene-four.scene-four-closed .scene-four-closed-only { display: flex; }
+  body.scene-four.scene-four-closed .scene-four-success-only { display: none; }
+  body.scene-two .gift-only { display: none; }
+  body.scene-two .cashback-structure { display: none; }
+  .scene-two-closed-only,
+  .scene-two-unsupported-only { display: none; }
+  /* “交易关闭”仅属于场景二·全部返现，其他所有场景均不展示。 */
+  body:not(.scene-two-closed) .scene-two-closed-only { display: none; }
+  body.scene-two-closed .scene-two-closed-only { display: flex; }
+  body.scene-two-closed .cashback-only,
+  body.scene-two-closed .bottom-bar { display: none; }
+  /* “不支持返现”仅属于场景二·全部返现，其他所有场景均不展示。 */
+  body:not(.scene-two-unsupported) .scene-two-unsupported-only { display: none; }
+  body.scene-two-unsupported .scene-two-unsupported-only { display: flex; }
+  body.scene-two-unsupported .cashback-only,
+  body.scene-two-unsupported .bottom-bar { display: none; }
+  .scene-three-closed-only { display: none; }
+  /* “交易关闭”仅属于场景三·部分返现部分礼金，其他所有场景均不展示。 */
+  body:not(.scene-three-closed) .scene-three-closed-only { display: none; }
+  body.scene-three-closed .scene-three-closed-only { display: flex; }
+  body.scene-three-closed .cashback-only,
+  body.scene-three-closed .bottom-bar { display: none; }
+  .scene-two-only { display: none; }
+  body.scene-two .scene-two-only { display: inline; }
+  body.scene-two .scene-two-received-only,
+  .cashback-received-only { display: none; }
+  body.scene-two-received .scene-two-pending-only { display: none; }
+  body.scene-two-received .scene-two-received-only { display: inline; }
+  body.cashback-received .cashback-pending-only { display: none; }
+  body.cashback-received .cashback-received-only { display: inline; }
+  .scene-three-received-summary { display: none; }
+  body.cashback-received .scene-three-pending-summary { display: none; }
+  body.cashback-received:not(.scene-two) .scene-three-received-summary { display: inline; }
+  body.cashback-received .cashback-card .progress-step.future .dot { background: #ff3d71; }
+  body.cashback-received .cashback-card .progress-step.future .dot svg { stroke: #fff; }
+  body.cashback-received .cashback-card .progress-step.future .step-label {
+    color: #333;
+    font-weight: 500;
+  }
+  body.cashback-received .cashback-card .progress-line.empty { background: #ff3d71; }
+  body.cashback-received .confirm-btn { display: none; }
+  .scene-one-only { display: none; }
+  body.scene-one .cashback-only,
+  body.scene-one .scene-three-only { display: none; }
+  body.scene-one .scene-one-only { display: inline-block; }
+  .scene-one-closed-only,
+  .scene-one-protection-only { display: none; }
+  body.scene-one.scene-one-closed .scene-one-success-only,
+  body.scene-one.scene-one-protection .scene-one-success-only { display: none; }
+  body.scene-one.scene-one-closed .scene-one-closed-only,
+  body.scene-one.scene-one-protection .scene-one-protection-only { display: inline-block; }
+  body.scene-one.scene-one-closed .gift-progress-card,
+  body.scene-one.scene-one-protection .gift-progress-card,
+  body.scene-one.scene-one-closed .scene-one-faq,
+  body.scene-one.scene-one-closed .bottom-bar,
+  body.scene-one.scene-one-protection .bottom-bar { display: none; }
+  .scene-one-protection-subtitle {
+    margin-top: 2px;
+    color: #999;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  body.scene-one .gift-summary { display: flex; }
+  body.scene-one .product-card {
+    margin-top: 0;
+    padding: 16px;
+  }
+  body.scene-one .product-top { margin-bottom: 14px; }
+  body.scene-one .info-row { padding: 11px 0; }
+  body.scene-one .amount-detail { padding-top: 13px; }
+
+  @media (max-width: 640px) {
+    .prototype-shell {
+      flex-direction: column;
+      align-items: center;
+    }
+    .scenario-switcher {
+      width: min(375px, calc(100vw - 16px));
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .scenario-option { flex: 1 1 calc(50% - 4px); white-space: normal; }
+  }
+
+  /* 返现卡片 */
+  .card {
+    background: #fff;
+    margin: 0 16px 12px;
+    border-radius: 16px;
+    padding: 20px 18px;
+  }
+  .cashback-card {
+    margin: 0 16px 14px;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+  .cashback-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .cashback-inline-amount {
+    color: #ff3d71;
+    font-size: 17px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .cashback-summary-strip {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 0 16px 8px;
+  }
+  .scene-three-cash-summary { display: none; }
+  body.scene-three .scene-three-cash-summary { display: inline; }
+  body.scene-three .card.cashback-card:not(.scene-three-card) { display: none; }
+  body.scene-two .card.cashback-card:not(.scene-two-card) { display: none; }
+  .scene-three-card,
+  .scene-two-card { display: none; }
+  body.scene-three:not(.scene-three-closed) .scene-three-card { display: block; }
+  body.scene-two:not(.scene-two-closed):not(.scene-two-unsupported) .scene-two-card { display: block; }
+  .scene-three-card,
+  .scene-two-card {
+    margin: 0 16px 14px;
+    padding: 16px 18px;
+    border-radius: 16px;
+    background: #fff;
+  }
+  .scene-three-cash-title {
+    color: #ff4f83;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.35;
+    font-variant-numeric: tabular-nums;
+  }
+  .scene-two-cash-title {
+    color: #ff4f83;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.35;
+    font-variant-numeric: tabular-nums;
+  }
+  .scene-three-gift-tag {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 10px;
+    padding: 3px 6px;
+    border: 1px solid #ffd8e4;
+    border-radius: 4px;
+    background: #fff7fa;
+    color: #ff6997;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.35;
+    vertical-align: middle;
+  }
+  .scene-three-received-title { display: none; }
+  body.scene-three.cashback-received .scene-three-pending-title { display: none; }
+  body.scene-three.cashback-received .scene-three-received-title { display: block; }
+  .scene-two-received-title { display: none; }
+  body.scene-two.scene-two-received .scene-two-pending-title { display: none; }
+  body.scene-two.scene-two-received .scene-two-received-title { display: block; }
+  .scene-three-card .progress-module,
+  .scene-two-card .progress-module {
+    margin-top: 16px;
+    padding: 16px 14px 18px;
+    border-radius: 12px;
+  }
+  .scene-three-card .progress-wrap,
+  .scene-two-card .progress-wrap { margin-top: 20px; }
+  .scene-three-card .progress-step,
+  .scene-two-card .progress-step { width: 62px; }
+  .scene-three-card .progress-step .dot,
+  .scene-two-card .progress-step .dot { width: 32px; height: 32px; }
+  .scene-two-protection-subtitle,
+  .scene-three-protection-subtitle { display: none; }
+  body.scene-two-protection .scene-two-protection-subtitle {
+    display: block;
+    margin-top: 2px;
+    color: #999;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  body.scene-three-protection .cashback-structure { display: none; }
+  body.scene-three-protection .scene-three-protection-subtitle {
+    display: block;
+    margin-top: 2px;
+    color: #999;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .saving-summary.scene-one-only { display: none; }
+  body.scene-one .saving-summary.scene-one-only { display: flex; }
+  body.scene-one:not(.scene-one-closed):not(.scene-one-protection) .gift-progress-card.scene-one-only { display: block; }
+  .gift-progress-card { margin: 0 16px 12px; }
+  .gift-progress-module { margin-top: 0; }
+  .gift-progress-module .notice { color: #4a3d42; }
+  .saving-total,
+  .cashback-saved {
+    color: #5b3844;
+    font-size: 16px;
+    font-weight: 500;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .saving-total strong,
+  .cashback-saved strong {
+    margin-left: 3px;
+    color: #ff3d71;
+    font-size: 24px;
+    font-weight: 700;
+  }
+  .transaction-closed {
+    color: #5b3844;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .cashback-overview {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .cashback-primary,
+  .cashback-total-group {
+    display: flex;
+    flex-direction: column;
+  }
+  .cashback-total-group {
+    align-items: flex-end;
+  }
+  .cashback-status {
+    color: #1a1a1a;
+    font-size: 17px;
+    font-weight: 600;
+  }
+  .cashback-status strong {
+    margin-left: 4px;
+    color: #ff3d71;
+    font-variant-numeric: tabular-nums;
+  }
+  .cashback-structure {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin-top: 8px;
+    min-height: 30px;
+    padding: 5px 9px;
+    border: 1px solid #f1e5e8;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(96, 62, 73, 0.05);
+    color: #7d8798;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .cashback-structure::before,
+  .cashback-structure::after {
+    position: absolute;
+    left: 106px;
+    width: 0;
+    height: 0;
+    content: "";
+    border-style: solid;
+  }
+  .cashback-structure::before {
+    top: -7px;
+    border-width: 0 6px 7px;
+    border-color: transparent transparent #f1e5e8;
+  }
+  .cashback-structure::after {
+    top: -6px;
+    border-width: 0 6px 7px;
+    border-color: transparent transparent #fff;
+  }
+  .cashback-structure strong {
+    color: #5b6475;
+    font-weight: 600;
+  }
+  .cashback-structure-separator {
+    margin: 0 7px;
+    color: #d3d6dc;
+  }
+
+  .cashback-amount {
+    margin-top: 12px;
+    font-size: 15px;
+    color: #ff3d71;
+    font-weight: 500;
+  }
+  .cashback-amount b {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0 2px;
+  }
+  .cashback-sub {
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    padding: 3px 7px;
+    border-radius: 4px;
+    background: #fff0f4;
+    font-size: 12.5px;
+    color: #ff3d71;
+    margin-top: 8px;
+  }
+  .scene-one-faq.scene-one-only {
+    display: none;
+  }
+  body.scene-one .scene-one-faq.scene-one-only { display: flex; }
+
+  /* 提示+进度 分组模块 */
+  .progress-module {
+    background: linear-gradient(180deg, #fff0f4, #fff9fa);
+    border-radius: 14px;
+    padding: 14px 14px 18px;
+    margin-top: 18px;
+  }
+  .cashback-card .progress-module {
+    margin-top: 0;
+    border-radius: 16px;
+    padding: 16px 14px 18px;
+  }
+
+  /* 提示条 */
+  .notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #333;
+  }
+  .notice .bell svg { display: block; }
+
+  /* 进度条 */
+  .progress-wrap {
+    display: flex;
+    align-items: flex-start;
+    margin: 20px 0 0;
+  }
+  .progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 56px;
+    flex-shrink: 0;
+  }
+  .progress-step .dot {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  .progress-step .dot svg { display: block; }
+  .progress-step.active .dot { background: #ff3d71; }
+  .progress-step.current .dot { background: #ff3d71; }
+  .progress-step.future .dot { background: #fbdbe4; }
+  .progress-step .step-label {
+    font-size: 11.5px;
+    color: #666;
+    margin-top: 8px;
+    text-align: center;
+    line-height: 1.3;
+    white-space: nowrap;
+  }
+  .progress-step.current .step-label,
+  .progress-step.active .step-label {
+    color: #333;
+    font-weight: 500;
+  }
+  .progress-line {
+    flex: 1;
+    height: 2px;
+    margin-top: 17px;
+  }
+  .progress-line.filled { background: #ff3d71; }
+  .progress-line.empty { background: #fbdbe4; }
+
+  /* 商品信息卡 */
+  .product-card {
+    background: #fff;
+    margin: 0 16px 12px;
+    border-radius: 16px;
+    padding: 18px;
+  }
+  .product-top {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .product-img {
+    width: 76px;
+    height: 76px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    background: linear-gradient(160deg,#2f6fd6,#1a3f8f);
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    font-size: 9px;
+  }
+  .product-img .badge-top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.15);
+    padding: 3px 4px;
+    font-size: 8px;
+  }
+  .product-img .badge-mid {
+    position: absolute;
+    left: 4px; top: 26px;
+    background: #ffb400;
+    color: #7a3d00;
+    font-weight: 700;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 8px;
+  }
+  .product-img .badge-bottom {
+    position: absolute;
+    bottom: 4px; left: 4px; right: 4px;
+    font-size: 6.5px;
+    opacity: 0.85;
+  }
+  .product-info { flex: 1; }
+  .product-name {
+    font-size: 15px;
+    color: #1a1a1a;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+  .product-shop {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #999;
+  }
+  .tm-badge {
+    background: #ff3d3d;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 3px;
+    border-radius: 2px;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-top: 1px solid #f2f2f2;
+    font-size: 14px;
+  }
+  .info-row .label { color: #999; }
+  .info-row .value { color: #1a1a1a; }
+  .info-row .value.pink { color: #ff3d71; font-weight: 600; }
+  .info-row .value.big { font-size: 16px; }
+  .copy-btn {
+    background: #f5f5f5;
+    color: #666;
+    font-size: 12px;
+    border: none;
+    border-radius: 12px;
+    padding: 4px 12px;
+    margin-left: 8px;
+  }
+  .order-no-value { display: flex; align-items: center; }
+
+  /* 实付金额标签 */
+  .label-row { display: flex; align-items: center; gap: 6px; }
+  .coupon-tag {
+    font-size: 11px;
+    color: #ff3d71;
+    background: #fff0f4;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  /* 金额明细 */
+  .amount-detail {
+    border-top: 1px solid #f2f2f2;
+    padding: 12px 0 0;
+  }
+  .amount-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 28px;
+  }
+  .amount-label {
+    color: #1a1a1a;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .amount-value {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #1a1a1a;
+    font-size: 20px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  /* 合计返现 可展开 */
+  .info-row.expandable {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .expand-value { display: flex; align-items: center; gap: 4px; }
+  .chevron {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-right: 1.5px solid #ff3d71;
+    border-bottom: 1.5px solid #ff3d71;
+    transform: rotate(45deg);
+    transition: transform 0.25s ease;
+    margin-bottom: 2px;
+  }
+  .info-row.expandable.open .chevron {
+    transform: rotate(-135deg);
+    margin-bottom: -2px;
+  }
+
+  .breakdown {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+  }
+  .breakdown.open { max-height: 200px; }
+  .breakdown .info-row {
+    padding: 10px 0 10px 16px;
+    border-top: 1px solid #f7f7f7;
+  }
+  .breakdown .info-row .label {
+    color: #999;
+    font-size: 13px;
+  }
+  .breakdown .info-row .value {
+    font-size: 13px;
+    color: #ff3d71;
+    font-weight: 600;
+  }
+  .cashback-total .label {
+    color: #ff3d71;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .cashback-total .value.big {
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  /* FAQ 卡片 */
+  .faq-card {
+    background: #fff;
+    margin: 0 16px 12px;
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #333;
+  }
+  .faq-more {
+    color: #999;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  /* 底部按钮 */
+  .bottom-bar {
+    position: static;
+    width: 375px;
+    background: #f5f5f5;
+    padding: 14px 16px 24px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .confirm-btn {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    color: #333;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 10px 28px;
+    border-radius: 24px;
+  }
+
+  /* 场景四：数字商品订单 */
+  .digital-order {
+    padding-bottom: 24px;
+    background: #f4f4f6;
+  }
+  .digital-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 68px;
+    padding: 10px 16px 8px;
+    color: #111;
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .digital-signal {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+  }
+  .digital-nav {
+    display: grid;
+    grid-template-columns: 40px 1fr 40px;
+    align-items: center;
+    padding: 12px 16px 22px;
+  }
+  .digital-back {
+    color: #3b3b3b;
+    font-size: 38px;
+    font-weight: 300;
+    line-height: 1;
+  }
+  .digital-nav-title {
+    text-align: center;
+    color: #303030;
+    font-size: 20px;
+    font-weight: 600;
+  }
+  .digital-service { justify-self: end; }
+  .digital-card {
+    margin: 0 16px 10px;
+    padding: 16px;
+    border-radius: 16px;
+    background: #fff;
+  }
+  .digital-coupon-title,
+  .digital-usage-title {
+    color: #303030;
+    font-size: 19px;
+    font-weight: 600;
+  }
+  .digital-code-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 15px 14px;
+    border-radius: 10px;
+    background: #fafafa;
+  }
+  .digital-code-label { color: #343434; font-size: 17px; font-weight: 600; }
+  .digital-code { flex: 1; color: #333; font-size: 18px; font-weight: 500; letter-spacing: .3px; }
+  .digital-copy {
+    min-width: 58px;
+    height: 30px;
+    border: 1px solid #ff8aa9;
+    border-radius: 18px;
+    background: #fff;
+    color: #ff5b87;
+    font-family: inherit;
+    font-size: 13px;
+  }
+  .digital-product-card { padding: 16px; }
+  .digital-product-top {
+    display: flex;
+    gap: 12px;
+    padding-bottom: 16px;
+  }
+  .digital-product-img {
+    position: relative;
+    width: 76px;
+    height: 76px;
+    flex: 0 0 auto;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #eaf7f0;
+  }
+  .digital-product-img .forest-mark {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #16b966;
+    color: #fff;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+  }
+  .digital-product-img .forest-name {
+    position: absolute;
+    top: 11px;
+    left: 29px;
+    color: #3b664e;
+    font-size: 9px;
+    font-weight: 700;
+  }
+  .digital-gift-panel {
+    position: absolute;
+    right: 8px;
+    bottom: 10px;
+    left: 8px;
+    padding: 7px 0 5px;
+    border-radius: 5px;
+    background: #18bd69;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .digital-gift-panel small { display: block; margin-top: 1px; font-size: 7px; font-weight: 500; }
+  .digital-product-name { color: #303030; font-size: 16px; font-weight: 500; }
+  .digital-store {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 27px;
+    color: #999;
+    font-size: 13px;
+  }
+  .digital-store-mark {
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+    background: #0ca85a;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 15px;
+    text-align: center;
+  }
+  .digital-detail-list { border-top: 1px solid #f0f0f0; }
+  .digital-detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 38px;
+    color: #343434;
+    font-size: 14px;
+  }
+  .digital-detail-row .label { color: #a3a3a3; }
+  .digital-detail-row .value { color: #343434; font-variant-numeric: tabular-nums; }
+  .digital-detail-row .value.with-copy { display: flex; align-items: center; gap: 6px; }
+  .digital-detail-row .copy-mini {
+    padding: 4px 10px;
+    border: 1px solid #eee;
+    border-radius: 15px;
+    color: #888;
+    font-size: 12px;
+  }
+  .digital-price-list {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #ededed;
+  }
+  .digital-price-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 38px;
+    color: #a3a3a3;
+    font-size: 14px;
+  }
+  .digital-price-row .value { color: #333; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .digital-price-row.emphasis {
+    margin-top: 2px;
+    padding-top: 8px;
+    border-top: 1px solid #ededed;
+  }
+  .digital-price-row.emphasis .value { color: #ff4d88; font-size: 17px; font-weight: 600; }
+  .digital-usage-card { min-height: 120px; }
+  .digital-usage-desc { margin-top: 14px; color: #999; font-size: 13px; line-height: 1.65; }
+</style>
 </head>
 <body>
-  <p>正在打开订单详情页 5.0…</p>
-  <p><a href="demo%E6%96%87%E4%BB%B6/09-01-%E8%AE%A2%E5%8D%95%E8%AF%A6%E6%83%85%E9%A1%B55.0/%E8%AE%A2%E5%8D%95%E8%AF%A6%E6%83%85%E9%A1%B55.0.html">点此进入</a></p>
+<div class="prototype-shell">
+  <!-- 原型演示工具栏：不属于订单详情页内容 -->
+  <div class="scenario-switcher" role="group" aria-label="订单场景切换">
+    <button class="scenario-option" id="sceneOneBtn" type="button" onclick="setScenario('one')">场景一·全部前置礼金</button>
+    <div class="scene-one-sub-switcher" role="group" aria-label="全部前置礼金细分场景">
+      <button class="scene-one-sub-option active" id="sceneOneSuccessBtn" type="button" onclick="setSceneOneSubScenario('success')">支付成功／交易成功</button>
+      <button class="scene-one-sub-option" id="sceneOneClosedBtn" type="button" onclick="setSceneOneSubScenario('closed')">交易关闭</button>
+      <button class="scene-one-sub-option" id="sceneOneProtectionBtn" type="button" onclick="setSceneOneSubScenario('protection')">维权</button>
+    </div>
+    <button class="scenario-option" id="sceneTwoBtn" type="button" onclick="setScenario('two-pending')">场景二·全部返现</button>
+    <div class="scene-two-sub-switcher" role="group" aria-label="全部返现细分场景">
+      <button class="scene-two-sub-option" id="sceneTwoPendingBtn" type="button" onclick="setScenario('two-pending')">待返现</button>
+      <button class="scene-two-sub-option" id="sceneTwoReceivedBtn" type="button" onclick="setScenario('two-received')">已返现</button>
+      <button class="scene-two-sub-option" id="sceneTwoClosedBtn" type="button" onclick="setScenario('two-closed')">交易关闭</button>
+      <button class="scene-two-sub-option" id="sceneTwoUnsupportedBtn" type="button" onclick="setScenario('two-unsupported')">不支持返现</button>
+      <button class="scene-two-sub-option" id="sceneTwoProtectionBtn" type="button" onclick="setScenario('two-protection')">维权</button>
+    </div>
+    <button class="scenario-option active" id="sceneThreeBtn" type="button" onclick="setScenario('three-pending')">场景三·部分返现部分礼金</button>
+    <div class="scene-three-sub-switcher" role="group" aria-label="部分返现部分礼金细分场景">
+      <button class="scene-three-sub-option active" id="sceneThreePendingBtn" type="button" onclick="setScenario('three-pending')">待返现</button>
+      <button class="scene-three-sub-option" id="sceneThreeReceivedBtn" type="button" onclick="setScenario('three-received')">已返现</button>
+      <button class="scene-three-sub-option" id="sceneThreeClosedBtn" type="button" onclick="setScenario('three-closed')">交易关闭</button>
+      <button class="scene-three-sub-option" id="sceneThreeProtectionBtn" type="button" onclick="setScenario('three-protection')">维权</button>
+    </div>
+    <button class="scenario-option" id="sceneFourBtn" type="button" onclick="setScenario('four-paid')">场景四·数字商品订单</button>
+    <div class="scene-four-sub-switcher" role="group" aria-label="数字商品订单细分场景">
+      <button class="scene-four-sub-option" id="sceneFourPaidBtn" type="button" onclick="setScenario('four-paid')">支付成功</button>
+      <button class="scene-four-sub-option" id="sceneFourClosedBtn" type="button" onclick="setScenario('four-closed')">交易关闭</button>
+    </div>
+  </div>
+
+  <div class="phone">
+
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <span>10:35</span>
+    <div class="app-badge">
+      <span class="icon">🌸</span>
+      <span>美柚</span>
+    </div>
+    <div class="icons">
+      <!-- signal -->
+      <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="7" width="3" height="5" fill="#1a1a1a"/><rect x="4" y="5" width="3" height="7" fill="#1a1a1a"/><rect x="8" y="3" width="3" height="9" fill="#1a1a1a"/><rect x="12" y="0" width="3" height="12" fill="#1a1a1a"/></svg>
+      <!-- wifi -->
+      <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 10.5a1.2 1.2 0 100 2.4 1.2 1.2 0 000-2.4z" fill="#1a1a1a"/><path d="M4.5 7.8a5 5 0 017 0l-1.2 1.3a3.2 3.2 0 00-4.6 0z" fill="#1a1a1a"/><path d="M2 5a8.5 8.5 0 0112 0L12.7 6.3a6.7 6.7 0 00-9.4 0z" fill="#1a1a1a"/></svg>
+      <!-- battery -->
+      <svg width="24" height="12" viewBox="0 0 24 12"><rect x="0.5" y="0.5" width="20" height="11" rx="2.5" stroke="#1a1a1a" fill="none"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="#1a1a1a"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="#1a1a1a"/></svg>
+    </div>
+  </div>
+
+  <!-- 导航栏 -->
+  <div class="nav-bar">
+    <div class="back">‹</div>
+    <div class="title">订单详情</div>
+    <div class="service">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="1.8"><path d="M4 13a8 8 0 0116 0"/><rect x="2" y="13" width="5" height="7" rx="2"/><rect x="17" y="13" width="5" height="7" rx="2"/></svg>
+    </div>
+  </div>
+
+  <div class="standard-order">
+  <!-- 场景一：全额前置礼金的省钱结果 -->
+  <div class="cashback-summary-strip saving-summary scene-one-only">
+    <span class="saving-total scene-one-success-only">省<strong>¥5.00</strong></span>
+    <span class="transaction-closed scene-one-closed-only">交易关闭</span>
+    <span class="saving-total scene-one-protection-only">省<strong>¥5.38</strong></span>
+    <span class="scene-one-protection-subtitle scene-one-protection-only">维权扣回礼金优惠¥2.38</span>
+  </div>
+  <div class="gift-progress-card scene-one-only">
+    <div class="progress-module gift-progress-module">
+      <div class="notice">
+        <span class="bell">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff3d71"><path d="M5 5.5A2.5 2.5 0 017.5 3h9A2.5 2.5 0 0119 5.5v2A2.5 2.5 0 0121.5 10v4A2.5 2.5 0 0119 16.5v2a2.5 2.5 0 01-2.5 2.5h-9A2.5 2.5 0 015 18.5v-2A2.5 2.5 0 012.5 14v-4A2.5 2.5 0 015 7.5v-2zm3 1.5v10h8V7H8z"/></svg>
+        </span>
+        <span>美柚专享礼金已为你加抵 ¥5.00</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-step active">
+          <div class="dot">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14v11H5z"/><path d="M12 8v11M5 12h14"/><path d="M12 8c-2.5 0-4-1-4-2.5S9.2 3 12 8zm0 0c2.5 0 4-1 4-2.5S14.8 3 12 8z"/></svg>
+          </div>
+          <div class="step-label">搜隐藏优惠</div>
+        </div>
+        <div class="progress-line filled"></div>
+        <div class="progress-step current">
+          <div class="dot">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <div class="step-label">领美柚专享礼金</div>
+        </div>
+        <div class="progress-line filled"></div>
+        <div class="progress-step current">
+          <div class="dot">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <div class="step-label">下单加抵</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 返现卡片 -->
+  <div class="cashback-summary-strip scene-two-closed-only">
+    <span class="transaction-closed">交易关闭</span>
+  </div>
+  <div class="cashback-summary-strip scene-two-unsupported-only">
+    <span class="transaction-closed">不支持返现</span>
+  </div>
+  <div class="cashback-summary-strip scene-three-closed-only">
+    <span class="transaction-closed">交易关闭</span>
+  </div>
+  <div class="cashback-summary-strip cashback-only">
+    <span class="cashback-saved scene-three-cash-summary">省<strong>¥5.3</strong></span>
+    <span class="scene-three-protection-subtitle">维权扣回礼金优惠¥5.00，返现金额¥0.38</span>
+    <span class="cashback-saved scene-two-only scene-two-pending-only">省<strong>¥0.38</strong></span>
+    <span class="cashback-saved scene-two-only scene-two-received-only">省<strong>¥0.38</strong></span>
+    <span class="scene-two-protection-subtitle">维权扣回返现金额¥0.38</span>
+  </div>
+  <div class="card cashback-card cashback-only">
+    <div class="progress-module">
+      <div class="notice">
+        <span class="bell">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff3d71">
+            <path d="M12 2a6 6 0 00-6 6v3.09c0 .58-.2 1.14-.57 1.59L4 15.5c-.6.73-.08 1.83.87 1.83h14.26c.95 0 1.47-1.1.87-1.83l-1.43-2.82A2.5 2.5 0 0118 11.09V8a6 6 0 00-6-6z"/>
+            <path d="M9.5 19a2.5 2.5 0 005 0h-5z"/>
+          </svg>
+        </span>
+        <span class="cashback-pending-only">今天确认收货，预计2026-07-14到账</span>
+        <span class="cashback-received-only">2026-08-06已返现</span>
+      </div>
+
+      <div class="progress-wrap">
+      <div class="progress-step current">
+        <div class="dot">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 8h12l-1 11a2 2 0 01-2 1.8H9A2 2 0 017 19L6 8z"/>
+            <path d="M9 8V6a3 3 0 016 0v2"/>
+          </svg>
+        </div>
+        <div class="step-label">通过美柚下单</div>
+      </div>
+      <div class="progress-line empty"></div>
+      <div class="progress-step future">
+        <div class="dot">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff3d71" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+        </div>
+        <div class="step-label">确认收货</div>
+      </div>
+      <div class="progress-line empty"></div>
+      <div class="progress-step future">
+        <div class="dot">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff3d71" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M9 8l3 4 3-4M12 12v5M9.5 14h5M9.5 16.5h5"/>
+          </svg>
+        </div>
+        <div class="step-label">返现到账</div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <div class="card cashback-card cashback-only scene-three-card">
+    <div class="scene-three-cash-title scene-three-pending-title">待返现0.12元<span class="scene-three-gift-tag">已享美柚礼金加抵5元</span></div>
+    <div class="scene-three-cash-title scene-three-received-title">已返现0.12元<span class="scene-three-gift-tag">已享美柚礼金加抵5元</span></div>
+    <div class="progress-module">
+      <div class="notice">
+        <span class="bell">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff3d71"><path d="M12 2a6 6 0 00-6 6v3.09c0 .58-.2 1.14-.57 1.59L4 15.5c-.6.73-.08 1.83.87 1.83h14.26c.95 0 1.47-1.1.87-1.83l-1.43-2.82A2.5 2.5 0 0118 11.09V8a6 6 0 00-6-6z"/><path d="M9.5 19a2.5 2.5 0 005 0h-5z"/></svg>
+        </span>
+        <span class="cashback-pending-only">预计2026-07-29到账</span>
+        <span class="cashback-received-only">2026-07-29到账</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-step current">
+          <div class="dot"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 11a2 2 0 01-2 1.8H9A2 2 0 017 19L6 8z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg></div>
+          <div class="step-label">通过美柚下单</div>
+        </div>
+        <div class="progress-line filled"></div>
+        <div class="progress-step current">
+          <div class="dot"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="step-label">支付成功</div>
+        </div>
+        <div class="progress-line empty"></div>
+        <div class="progress-step future">
+          <div class="dot"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ff3d71" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 8l3 4 3-4M12 12v5M9.5 14h5M9.5 16.5h5"/></svg></div>
+          <div class="step-label">返现到账</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card cashback-card cashback-only scene-two-card">
+    <div class="scene-two-cash-title scene-two-pending-title">待返现0.38元</div>
+    <div class="scene-two-cash-title scene-two-received-title">已返现0.38元</div>
+    <div class="progress-module">
+      <div class="notice">
+        <span class="bell">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff3d71"><path d="M12 2a6 6 0 00-6 6v3.09c0 .58-.2 1.14-.57 1.59L4 15.5c-.6.73-.08 1.83.87 1.83h14.26c.95 0 1.47-1.1.87-1.83l-1.43-2.82A2.5 2.5 0 0118 11.09V8a6 6 0 00-6-6z"/><path d="M9.5 19a2.5 2.5 0 005 0h-5z"/></svg>
+        </span>
+        <span class="cashback-pending-only">预计2026-07-29到账</span>
+        <span class="cashback-received-only">2026-07-29到账</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-step current">
+          <div class="dot"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 11a2 2 0 01-2 1.8H9A2 2 0 017 19L6 8z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg></div>
+          <div class="step-label">通过美柚下单</div>
+        </div>
+        <div class="progress-line filled"></div>
+        <div class="progress-step current">
+          <div class="dot"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="step-label">支付成功</div>
+        </div>
+        <div class="progress-line empty"></div>
+        <div class="progress-step future">
+          <div class="dot"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ff3d71" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 8l3 4 3-4M12 12v5M9.5 14h5M9.5 16.5h5"/></svg></div>
+          <div class="step-label">返现到账</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 商品信息卡 -->
+  <div class="product-card">
+    <div class="product-top">
+      <div class="product-img">
+        <div class="badge-top">高鲜肉配方 熟食都湿粮</div>
+        <div class="badge-mid">第2件半价</div>
+        <div class="badge-bottom">助力免疫/泌尿呵护/护肤靓毛</div>
+      </div>
+      <div class="product-info">
+        <div class="product-name">蓝氏乳鸽主食猫条肉满条全价猫粮猫饭湿粮成猫幼猫猫罐头猫咪零食</div>
+        <div class="product-shop"><span class="tm-badge">天猫</span> 天猫</div>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <span class="label">下单时间</span>
+      <span class="value">2026-07-14 10:34:24</span>
+    </div>
+    <div class="info-row">
+      <span class="label">订单编号</span>
+      <span class="value order-no-value">5123765991717001937 <button class="copy-btn">复制</button></span>
+    </div>
+    <div class="amount-detail">
+      <div class="amount-summary">
+        <span class="label-row">
+          <span class="amount-label">实付金额</span>
+          <span class="coupon-tag gift-only">已享美柚礼金加抵5元</span>
+        </span>
+        <span class="amount-value">¥38.92</span>
+      </div>
+    </div>
+    <div class="info-row expandable cashback-only cashback-total" id="cashbackToggle" onclick="toggleBreakdown()">
+      <span class="label">合计返现</span>
+      <span class="value pink big expand-value">¥ 0.38 <span class="chevron"></span></span>
+    </div>
+    <div class="breakdown cashback-only" id="cashbackBreakdown">
+      <div class="info-row">
+        <span class="label">商品返现</span>
+        <span class="value">¥ 0.28</span>
+      </div>
+      <div class="info-row">
+        <span class="label">打卡补贴</span>
+        <span class="value">¥ 0.10</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq-card cashback-only">
+    <span>返现为什么还没到账？</span>
+    <span class="faq-more">更多 ›</span>
+  </div>
+  <div class="faq-card scene-one-faq scene-one-only">
+    <span>美柚专享礼金如何使用？</span>
+    <span class="faq-more">查看说明 ›</span>
+  </div>
+  </div>
+
+  <!-- 场景四：数字商品订单 -->
+  <div class="digital-order scene-four-only">
+    <div class="digital-status">
+      <span>17:31</span>
+      <div class="digital-signal">
+        <svg width="20" height="15" viewBox="0 0 20 15" fill="none" stroke="#111" stroke-width="2"><path d="M2 5.5a11 11 0 0116 0"/><path d="M5 8.5a7 7 0 0110 0"/><path d="M8 11.5a3 3 0 014 0"/></svg>
+        <svg width="27" height="15" viewBox="0 0 27 15"><rect x=".5" y=".5" width="23" height="14" rx="4" fill="none" stroke="#111"/><rect x="3" y="3" width="9" height="9" rx="2" fill="#111"/><path d="M25 5v5" stroke="#111" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+    <div class="digital-nav">
+      <span class="digital-back">‹</span>
+      <span class="digital-nav-title">订单详情</span>
+      <span class="digital-service"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="1.7"><path d="M4 13a8 8 0 0116 0"/><rect x="2" y="13" width="5" height="7" rx="2"/><rect x="17" y="13" width="5" height="7" rx="2"/></svg></span>
+    </div>
+
+    <div class="cashback-summary-strip scene-four-success-only">
+      <span class="saving-total">省<strong>¥1.00</strong></span>
+    </div>
+    <div class="cashback-summary-strip scene-four-closed-only">
+      <span class="transaction-closed">交易关闭</span>
+    </div>
+
+    <div class="digital-card scene-four-success-only">
+      <div class="digital-coupon-title">我的卡券信息</div>
+      <div class="digital-code-row">
+        <span class="digital-code-label">兑换码：</span>
+        <span class="digital-code">n46dmdxyiq4q</span>
+        <button class="digital-copy">复制</button>
+      </div>
+    </div>
+
+    <div class="digital-card digital-product-card">
+      <div class="digital-product-top">
+        <div class="digital-product-img">
+          <span class="forest-mark">朴</span><span class="forest-name">朴朴</span>
+          <span class="digital-gift-panel">50<small>元礼品卡</small></span>
+        </div>
+        <div>
+          <div class="digital-product-name">朴朴50元礼品卡</div>
+          <div class="digital-store"><span class="digital-store-mark">朴</span>朴朴超市</div>
+        </div>
+      </div>
+
+      <div class="digital-detail-list">
+        <div class="digital-detail-row"><span class="label">下单时间</span><span class="value">2026-03-18 19:40:53</span></div>
+        <div class="digital-detail-row"><span class="label">成交时间</span><span class="value">2026-03-18 19:41:03</span></div>
+        <div class="digital-detail-row"><span class="label">订单编号</span><span class="value with-copy">LHK29202603181940531250 <span class="copy-mini">复制</span></span></div>
+        <div class="digital-detail-row"><span class="label">支付方式</span><span class="value">支付宝</span></div>
+      </div>
+      <div class="digital-price-list">
+        <div class="digital-price-row"><span>购买件数</span><span class="value">1件</span></div>
+        <div class="digital-price-row"><span>商品市场价</span><span class="value">¥ 50.00</span></div>
+        <div class="digital-price-row"><span>美柚立减</span><span class="value">¥ 1.00</span></div>
+        <div class="digital-price-row emphasis"><span>实付金额</span><span class="value">¥ 49.00</span></div>
+      </div>
+    </div>
+
+    <div class="digital-card faq-card scene-four-success-only" style="margin-top:0;">
+      <span>为什么商品搜不到返现？</span><span class="faq-more">更多 ›</span>
+    </div>
+    <div class="digital-card digital-usage-card scene-four-success-only">
+      <div class="digital-usage-title">使用方法</div>
+      <div class="digital-usage-desc">复制兑换码后，前往朴朴 App 或小程序兑换使用。</div>
+    </div>
+  </div>
+
+  <!-- 底部按钮 -->
+  <div class="bottom-bar">
+    <button class="confirm-btn">去确认收货</button>
+  </div>
+
+  </div>
+</div>
+<script>
+  function toggleBreakdown() {
+    document.getElementById('cashbackToggle').classList.toggle('open');
+    document.getElementById('cashbackBreakdown').classList.toggle('open');
+  }
+
+  function setScenario(scenario) {
+    const isSceneOne = scenario === 'one';
+    const isSceneTwo = scenario === 'two-pending' || scenario === 'two-received' || scenario === 'two-closed' || scenario === 'two-unsupported' || scenario === 'two-protection';
+    const isSceneThree = scenario === 'three-pending' || scenario === 'three-received' || scenario === 'three-closed' || scenario === 'three-protection';
+    const isSceneFour = scenario === 'four' || scenario === 'four-paid' || scenario === 'four-closed';
+    const isSceneTwoReceived = scenario === 'two-received';
+    const isSceneTwoClosed = scenario === 'two-closed';
+    const isSceneTwoUnsupported = scenario === 'two-unsupported';
+    const isSceneTwoProtection = scenario === 'two-protection';
+    const isSceneTwoSettled = isSceneTwoReceived || isSceneTwoProtection;
+    const isSceneThreeReceived = scenario === 'three-received';
+    const isSceneThreeClosed = scenario === 'three-closed';
+    const isSceneThreeProtection = scenario === 'three-protection';
+    const isSceneFourClosed = scenario === 'four-closed';
+    const isSceneThreeSettled = isSceneThreeReceived || isSceneThreeProtection;
+    const isCashbackReceived = isSceneTwoSettled || isSceneThreeSettled;
+    document.body.classList.toggle('scene-one', isSceneOne);
+    document.body.classList.toggle('scene-two', isSceneTwo);
+    document.body.classList.toggle('scene-three', isSceneThree);
+    document.body.classList.toggle('scene-two-closed', isSceneTwoClosed);
+    document.body.classList.toggle('scene-two-unsupported', isSceneTwoUnsupported);
+    document.body.classList.toggle('scene-two-protection', isSceneTwoProtection);
+    document.body.classList.toggle('scene-three-closed', isSceneThreeClosed);
+    document.body.classList.toggle('scene-three-protection', isSceneThreeProtection);
+    document.body.classList.toggle('scene-four-closed', isSceneFourClosed);
+    document.body.classList.toggle('scene-four', isSceneFour);
+    document.body.classList.toggle('scene-two-received', isSceneTwoSettled);
+    document.body.classList.toggle('cashback-received', isCashbackReceived);
+    document.getElementById('sceneOneBtn').classList.toggle('active', isSceneOne);
+    document.getElementById('sceneTwoBtn').classList.toggle('active', isSceneTwo);
+    document.getElementById('sceneTwoPendingBtn').classList.toggle('active', scenario === 'two-pending');
+    document.getElementById('sceneTwoReceivedBtn').classList.toggle('active', isSceneTwoReceived);
+    document.getElementById('sceneTwoClosedBtn').classList.toggle('active', isSceneTwoClosed);
+    document.getElementById('sceneTwoUnsupportedBtn').classList.toggle('active', isSceneTwoUnsupported);
+    document.getElementById('sceneTwoProtectionBtn').classList.toggle('active', isSceneTwoProtection);
+    document.getElementById('sceneThreeBtn').classList.toggle('active', isSceneThree);
+    document.getElementById('sceneThreePendingBtn').classList.toggle('active', scenario === 'three-pending');
+    document.getElementById('sceneThreeReceivedBtn').classList.toggle('active', isSceneThreeReceived);
+    document.getElementById('sceneThreeClosedBtn').classList.toggle('active', isSceneThreeClosed);
+    document.getElementById('sceneThreeProtectionBtn').classList.toggle('active', isSceneThreeProtection);
+    document.getElementById('sceneFourBtn').classList.toggle('active', isSceneFour);
+    document.getElementById('sceneFourPaidBtn').classList.toggle('active', isSceneFour && !isSceneFourClosed);
+    document.getElementById('sceneFourClosedBtn').classList.toggle('active', isSceneFourClosed);
+    document.body.classList.remove('scene-one-closed', 'scene-one-protection');
+    document.getElementById('sceneOneSuccessBtn').classList.toggle('active', isSceneOne);
+    document.getElementById('sceneOneClosedBtn').classList.remove('active');
+    document.getElementById('sceneOneProtectionBtn').classList.remove('active');
+  }
+
+  function setSceneOneSubScenario(subScenario) {
+    setScenario('one');
+    document.body.classList.toggle('scene-one-closed', subScenario === 'closed');
+    document.body.classList.toggle('scene-one-protection', subScenario === 'protection');
+    document.getElementById('sceneOneSuccessBtn').classList.toggle('active', subScenario === 'success');
+    document.getElementById('sceneOneClosedBtn').classList.toggle('active', subScenario === 'closed');
+    document.getElementById('sceneOneProtectionBtn').classList.toggle('active', subScenario === 'protection');
+  }
+
+  const initialScenario = new URLSearchParams(window.location.search).get('scenario');
+  if (['one', 'two-pending', 'two-received', 'two-closed', 'two-unsupported', 'two-protection', 'three-pending', 'three-received', 'three-closed', 'three-protection', 'four', 'four-paid', 'four-closed'].includes(initialScenario)) {
+    setScenario(initialScenario);
+  }
+</script>
 </body>
 </html>
