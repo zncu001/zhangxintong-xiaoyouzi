@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="210" viewBox="0 0 660 210">
+  <rect width="660" height="210" rx="16" fill="#f7f7f9"/>
+  <g font-family="PingFang SC,Microsoft YaHei,sans-serif">
+    <g transform="translate(15 15)">
+      <rect width="200" height="180" rx="12" fill="#fff" stroke="#e9e9ed"/>
+      <circle cx="24" cy="24" r="13" fill="#ff4d88"/><text x="24" y="29" text-anchor="middle" font-size="14" fill="#fff">1</text>
+      <rect x="67" y="24" width="66" height="112" rx="13" fill="#f3f3f6" stroke="#dadade"/>
+      <rect x="73" y="34" width="54" height="15" rx="5" fill="#fff1f6"/>
+      <rect x="75" y="58" width="50" height="32" rx="5" fill="#fff"/>
+      <rect x="75" y="96" width="50" height="24" rx="5" fill="#fff"/>
+      <circle cx="82" cy="128" r="3" fill="#bbb"/><circle cx="100" cy="128" r="3" fill="#bbb"/><circle cx="118" cy="128" r="3" fill="#bbb"/>
+      <text x="100" y="160" text-anchor="middle" font-size="18" fill="#555">打开美柚 App</text>
+    </g>
+    <g transform="translate(230 15)">
+      <rect width="200" height="180" rx="12" fill="#fff" stroke="#e9e9ed"/>
+      <circle cx="24" cy="24" r="13" fill="#ff4d88"/><text x="24" y="29" text-anchor="middle" font-size="14" fill="#fff">2</text>
+      <rect x="67" y="24" width="66" height="112" rx="13" fill="#f3f3f6" stroke="#dadade"/>
+      <rect x="73" y="34" width="54" height="58" rx="6" fill="#fff"/>
+      <rect x="73" y="104" width="54" height="25" rx="5" fill="#fff"/>
+      <rect x="86" y="108" width="28" height="17" rx="7" fill="#ff4d88"/>
+      <text x="100" y="120" text-anchor="middle" font-size="9" fill="#fff">返现</text>
+      <text x="100" y="160" text-anchor="middle" font-size="18" fill="#555">点击「返现」</text>
+    </g>
+    <g transform="translate(445 15)">
+      <rect width="200" height="180" rx="12" fill="#fff" stroke="#e9e9ed"/>
+      <circle cx="24" cy="24" r="13" fill="#ff4d88"/><text x="24" y="29" text-anchor="middle" font-size="14" fill="#fff">3</text>
+      <rect x="67" y="24" width="66" height="112" rx="13" fill="#f3f3f6" stroke="#dadade"/>
+      <rect x="73" y="35" width="54" height="18" rx="5" fill="#fff1f6"/>
+      <text x="100" y="48" text-anchor="middle" font-size="8" fill="#c83d70">我的订单</text>
+      <rect x="73" y="60" width="54" height="27" rx="5" fill="#fff"/><rect x="78" y="66" width="15" height="15" rx="3" fill="#f1e8df"/><rect x="98" y="67" width="24" height="4" rx="2" fill="#bbb"/><rect x="98" y="76" width="18" height="4" rx="2" fill="#ffadc8"/>
+      <rect x="73" y="94" width="54" height="27" rx="5" fill="#fff"/>
+      <text x="100" y="160" text-anchor="middle" font-size="18" fill="#555">打开「我的订单」</text>
+    </g>
+  </g>
+</svg>

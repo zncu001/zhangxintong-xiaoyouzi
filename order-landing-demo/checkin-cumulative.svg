@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="84" viewBox="0 0 640 84">
+  <rect width="640" height="84" rx="12" fill="#fff5f8"/>
+  <path d="M294 24v36" stroke="#f2dce4"/>
+  <g fill="#ad5775" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="23" text-anchor="middle">
+    <text x="147" y="51">累计XX人打卡</text>
+    <text x="467" y="51">累计发放补贴XX元</text>
+  </g>
+</svg>

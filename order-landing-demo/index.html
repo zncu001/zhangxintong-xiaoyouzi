@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>订单承接页demo</title>
+  <style>
+    :root{--brand:#ff4d88;--soft:#fff1f6;--bg:#f5f5f7;--ink:#323232;--muted:#777;--line:#e8e8ec;--link:#4f7cae;--functional-outline:#ff93b8;--marketing-outline:#f2c384}
+    *{box-sizing:border-box}
+    body{margin:0;background:#fafafa;color:var(--ink);font:14px/1.65 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}
+    button,input{font:inherit}button{border:0;background:none;color:inherit;cursor:pointer;min-height:44px}
+    button:focus-visible,input:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+    button:disabled{opacity:.55;cursor:default}
+    h1,h2,h3,p{margin:0}h1{font-size:22px;font-weight:600}h2{font-size:21px}h3{font-size:16px}
+    .page-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 32px;background:#fff;border-bottom:1px solid var(--line)}
+    .page-header small{color:#999;font-size:11px}
+    .workspace{max-width:1100px;display:grid;grid-template-columns:200px minmax(0,1fr);justify-content:center;gap:36px;margin:28px auto;padding:0 20px}
+    .eyebrow{color:#999;font-size:11px;letter-spacing:1px;margin-bottom:12px}
+    .scene-tab{display:flex;align-items:center;gap:12px;width:100%;padding:12px;text-align:left;border-radius:8px;margin-bottom:4px}
+    .scene-tab span{color:#999;font-size:12px}.scene-tab.active{background:var(--soft);color:#cf386d}.scene-tab.active span{color:#cf386d}
+    .width-label{width:max-content;margin:0 auto 12px;padding:3px 8px;background:var(--soft);color:#c9386b;border-radius:4px;font-size:11px}
+    .preview-layout{display:grid;grid-template-columns:390px minmax(180px,1fr);align-items:stretch;gap:24px}
+    .phone-shell{min-width:0}
+    .phone{width:390px;max-width:100%;margin:auto;background:var(--bg);border:1px solid #ddd;border-radius:24px;overflow:hidden;box-shadow:0 8px 28px #00000006}
+    .module-notes{position:relative;min-width:0}
+    .module-note{position:absolute;left:0;width:min(100%,260px);padding:12px 14px;background:#fff;border:1px solid var(--line);border-left:3px solid var(--brand);border-radius:8px;box-shadow:0 2px 8px #00000005}
+    .module-note::before{content:"";position:absolute;top:21px;right:100%;width:24px;border-top:1px solid var(--brand)}
+    .module-note h3{font-size:14px;font-weight:600;color:#c9386b}.module-note p{margin-top:4px;color:#666;font-size:12px;line-height:1.6}
+    .module-note.marketing{border-left-color:#e5a65d}.module-note.marketing::before{border-top-color:#e5a65d}.module-note.marketing h3{color:#9b6a2a}
+    .status{display:flex;justify-content:space-between;padding:12px 20px 4px;background:#fff;font-size:11px}
+    .appnav{display:flex;justify-content:space-between;align-items:center;height:52px;padding:0 12px;background:#fff}.appnav strong{font-size:16px;font-weight:500}.appnav button{font-size:13px;min-width:44px}
+    .screen{min-height:570px;padding:16px}.card{padding:20px;margin-bottom:12px;background:#fff;border:1px solid #f0f0f2;border-radius:12px}
+    .screen>:first-child{border-color:var(--functional-outline)}.screen>:not(:first-child){border-color:var(--marketing-outline)}
+    .sub{font-size:12px;color:#888}.primary,.secondary{display:block;width:100%;min-height:44px;margin-top:12px;padding:10px 12px;border-radius:8px}
+    .primary{background:var(--brand);color:#fff}.secondary{background:#f2f2f5;color:#555}.link{color:var(--link);padding:0;text-align:left;font-size:12px}
+    .state-hero{text-align:center;padding:12px 0 0}.state-mark{width:48px;height:48px;margin:4px auto 18px;border-radius:50%;background:#f2f2f5}
+    .state-mark.loading{border:3px solid #eee;border-top-color:var(--brand);background:none}
+    .state-hero h2{font-size:21px}.query-timing{font-size:14px;color:#666;margin:12px 0 8px}.query-timing span{font-variant-numeric:tabular-nums}
+    .query-reason{font-size:11px;color:#999;line-height:1.6}.ticker{padding:8px 10px;margin-top:18px;border-radius:6px;background:#fff2f5;color:#bd365b;font-size:12px;font-weight:600}
+    .query-purchase{display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;color:#999;font-size:12px}
+    .order-empty{padding:24px 20px 16px}.empty-heading{display:flex;align-items:center;gap:8px;margin-bottom:8px}.status-dot{width:7px;height:7px;border-radius:50%;background:#d5a45f}
+    .order-empty>.sub{margin:0 0 22px}.resume-item{display:flex;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
+    .product-art{display:grid;place-items:center;flex-shrink:0;width:56px;height:64px;border-radius:8px;background:#f5f1ea}
+    .pack{padding:8px 4px;border:1px solid #dad3c6;border-radius:3px;background:#fffdfa;color:#9b8a6e;font-size:11px;text-align:center;transform:rotate(-5deg)}.pack span{display:block;font-size:6px}
+    .resume-item strong{font-size:14px;font-weight:500}.resume-price{color:#888;font-size:12px;margin-top:5px}.resume-price b{color:var(--brand);font-size:19px;font-weight:600;margin-left:5px}
+    .order-empty .primary{margin-top:4px}.recovery-line{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:8px;color:#999;font-size:11px}
+    .switch-offer{padding:16px;margin:0 0 12px;background:#fff;border:1px solid var(--marketing-outline);border-radius:12px}.switch-heading{display:flex;justify-content:space-between;align-items:center;margin:0 4px 10px}.switch-heading h3{font-size:14px;font-weight:500}.switch-heading span{font-size:11px;color:#aaa}
+    .switch-product{display:flex;align-items:center;gap:12px;width:100%;padding:16px;background:#fff;border:1px solid #ededf0;border-radius:12px;text-align:left}
+    .switch-product strong{display:block;font-size:16px;font-weight:500}.switch-product small{display:block;color:#999;font-size:11px;margin:4px 0}.mini-tag{display:inline-block;padding:1px 5px;border-radius:3px;background:#f7f2e8;color:#a18456;font-size:10px}.offer-arrow{margin-left:auto;white-space:nowrap;color:#777;font-size:12px}
+    .cashback-card{padding:14px 12px}.cashback-card h3{font-size:17px;font-weight:600;color:var(--brand);margin-bottom:14px}
+    .cashback-panel{position:relative;padding:12px 10px 10px;border-radius:8px;background:#fff6f9}.arrival-date{display:inline-flex;align-items:center;gap:4px;padding:5px 7px;background:#fff;border-radius:6px;color:#777;font-size:11px}
+    .cashback-track{position:relative;height:20px;margin:8px 6px 0}.track-line{position:absolute;top:8px;left:0;right:0;height:5px;border-radius:5px;background:#ffd6e4}.track-line i{display:block;width:73%;height:100%;border-radius:5px;background:var(--brand)}
+    .track-node{position:absolute;top:2px;display:grid;place-items:center;width:16px;height:16px;border:2px solid #fff6f9;border-radius:5px;background:var(--brand);color:#fff;font-size:12px;line-height:12px}.track-node.first{left:-3px}.track-node.middle{left:calc(50% - 8px)}.track-node.last{right:-3px;border-radius:50%;background:#ffd6e4;font-size:9px}
+    .cash-coin{position:absolute;left:72%;top:-5px;width:22px;height:24px;border:2px solid #f8b84c;border-radius:50%;background:#ffcd62;color:#b67b22;text-align:center;line-height:20px;font-size:14px;font-weight:600;transform:rotate(-14deg)}
+    .track-labels{display:flex;justify-content:space-between;color:#aaa;font-size:10px;margin-top:3px}.track-labels span:nth-child(2){position:absolute;left:50%;transform:translateX(-50%)}
+    .view-order{display:flex;justify-content:center;align-items:center;gap:5px;width:100%;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);color:#666;font-size:13px}.view-order span{color:#aaa;font-size:16px}
+    .daily-welfare h3{font-size:16px}.benefit-intro{font-size:12px;color:#888;margin:6px 0 0}.cumulative-proof{display:block;width:100%;height:auto;margin-top:14px}
+    .stack-benefits{display:flex;align-items:center;justify-content:center;gap:8px;padding:20px 0 12px}.benefit-unit{display:flex;align-items:center;gap:8px;min-width:118px}.benefit-unit strong{display:block;font-size:13px;font-weight:500}.benefit-unit small{display:block;margin-top:2px;color:#999;font-size:10px}
+    .benefit-icon{display:grid;place-items:center;flex-shrink:0;width:36px;height:36px;border-radius:10px;font-size:14px;font-weight:600}.benefit-icon.cashback{background:#fff1f6;color:#d64073}.benefit-icon.subsidy{background:#fff7e9;color:#bd7b25}.stack-plus{font-size:18px;color:#bbb}
+    .stack-result{padding:9px 8px;margin-bottom:12px;border-radius:8px;background:#f8f8fa;color:#666;text-align:center;font-size:12px}.daily-welfare .primary{margin-top:0}.habit-cue{text-align:center;color:#888;font-size:11px;margin-top:10px}
+    .return-guide{padding:18px 16px}.return-guide h3{font-size:15px;margin-bottom:12px}.tutorial-block{padding:14px 0;border-top:1px solid var(--line)}.tutorial-block:first-of-type{border-top:0;padding-top:0}
+    .tutorial-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}.tutorial-title strong{font-size:13px;font-weight:500}.tutorial-title span{font-size:10px;color:#999;white-space:nowrap}.tutorial-block img{display:block;width:100%;height:auto;border-radius:8px;background:#fafafd}
+    .controls{margin-top:18px;border-top:1px dashed #ddd;padding-top:12px}.controls summary{color:#888;font-size:12px;cursor:pointer}.control-list{display:flex;flex-wrap:wrap;gap:8px;padding-top:10px}.control-list button{min-height:32px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;background:#fff;font-size:12px}
+    .overlay{position:fixed;inset:0;display:grid;place-items:center;z-index:10;padding:20px;background:#0005}.overlay[hidden]{display:none}.dialog{width:360px;max-width:100%;max-height:90vh;overflow:auto;padding:24px;border-radius:16px;background:#fff}.dialog h2{margin-bottom:14px}.dialog p{margin:8px 0}.dialog input{width:100%;padding:12px;margin:10px 0;border:1px solid #ddd;border-radius:8px}.error{min-height:20px;color:#d33;font-size:12px}
+    .kv{display:flex;justify-content:space-between;padding:5px 0;font-size:13px}.kv span{color:#777}.note{padding:12px;margin-top:14px;border-radius:8px;background:#f8f8fa;color:#777;font-size:12px}.toast{position:fixed;bottom:24px;left:50%;z-index:20;max-width:90vw;padding:12px 20px;border-radius:8px;background:#333;color:#fff;transform:translateX(-50%)}.toast:empty{display:none}
+    @media(max-width:850px){.workspace{display:block;padding:0 12px;margin:14px auto}.eyebrow{display:none}.scene-nav{display:flex;gap:5px;overflow:auto;margin-bottom:16px}.scene-tab{min-width:148px;padding:8px;margin:0;font-size:12px}.preview-layout{grid-template-columns:minmax(0,390px) minmax(160px,1fr);gap:16px}.module-note::before{width:16px}}
+    @media(max-width:640px){.page-header{padding:16px}.page-header h1{font-size:19px}.page-header small{font-size:10px}.width-label{display:none}.phone{border-radius:16px}}
+    @media(max-width:570px){.preview-layout{display:block}.phone-shell{max-width:390px;margin:auto}.module-notes{display:grid;gap:10px;max-width:390px;margin:16px auto 0}.module-note{position:static}.module-note::before{display:none}}
+  </style>
+</head>
+<body>
+  <header class="page-header"><h1>订单承接页demo</h1><small>示例数据 · 仅供设计参考</small></header>
+  <main class="workspace">
+    <aside><div class="eyebrow">页面场景</div><nav class="scene-nav" id="navigation" aria-label="场景切换"></nav></aside>
+    <section class="preview">
+      <div class="preview-layout">
+        <div class="phone-shell">
+          <div class="width-label">390px</div>
+          <div class="phone" id="phone">
+            <div class="status"><span>9:41</span><span>美柚省钱</span></div>
+            <div class="appnav"><button aria-label="返回" onclick="back()">‹ 返回</button><strong>订单与福利</strong><button onclick="rules()">规则</button></div>
+            <div class="screen" id="screen"></div>
+          </div>
+        </div>
+        <aside class="module-notes" id="module-notes" aria-label="页面模块定位释义">
+          <div class="module-note" id="functional-note"><h3>功能区块</h3><p>用于反馈一分购订单的查询状态和查询结果。</p></div>
+          <div class="module-note marketing" id="marketing-note"><h3>营销区块</h3><p>用于透传营销信息的资源位。（以运营需求为准）</p></div>
+        </aside>
+      </div>
+      <details class="controls"><summary>状态切换</summary><div class="control-list" id="controls"></div></details>
+    </section>
+  </main>
+  <div class="overlay" id="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="dialogtitle"><div class="dialog" id="dialog"></div></div>
+  <div class="toast" id="toast" role="status"></div>
+  <script>
+    const names=['订单查询中','暂未查到订单','成功查询到订单'];
+    const $=id=>document.getElementById(id);
+    let scene=0,history=[],deadline=Date.now()+75000,recovered=false,claimed=false,tickerIndex=0,focusBefore;
+    const button=(label,action,kind='primary',disabled=false)=>`<button class="${kind}" onclick="${action}" ${disabled?'disabled':''}>${label}</button>`;
+    const kv=(label,value)=>`<div class="kv"><span>${label}</span><strong>${value}</strong></div>`;
+    const product=()=>`<div class="resume-item"><div class="product-art"><div class="pack">棉柔巾<span>SOFT TISSUE</span></div></div><div><strong>日用棉柔巾</strong><div class="resume-price">返现后到手<b>¥0.01</b></div></div></div>`;
+    function remaining(){return Math.max(0,Math.ceil((deadline-Date.now())/1000))}
+    function show(n){history.push(scene);scene=n;if(n===0&&remaining()===0)deadline=Date.now()+75000;render()}
+    function back(){if(history.length){scene=history.pop();render()}else show(0)}
+    function startQuery(){closeModal();deadline=Date.now()+75000;recovered=false;show(0)}
+    function toast(text){$('toast').textContent=text;clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>$('toast').textContent='',2600)}
+    function modal(title,body){focusBefore=document.activeElement;$('dialog').innerHTML=`<h2 id="dialogtitle">${title}</h2>${body}${button('关闭','closeModal()','secondary')}`;$('overlay').hidden=false;$('dialog').querySelector('button,input')?.focus()}
+    function closeModal(){$('overlay').hidden=true;focusBefore?.focus()}
+    document.addEventListener('keydown',event=>{if(!$('overlay').hidden&&event.key==='Escape')closeModal()});
+    function rules(){modal('权益说明','<p>符合活动约定的订单按规则返现。每日打卡补贴为额外福利。</p>')}
+    function continueOrder(){modal('继续下单',`${product()}<p class="sub">返回本次一分购商品，下单后可回美柚查询。</p>${button('模拟从淘宝返回','startQuery()')}`)}
+    function recover(){modal('找回已付款订单',`<label for="orderid">淘宝订单号</label><input id="orderid" placeholder="请输入淘宝订单号" inputmode="numeric"><div class="error" id="formerror" role="alert"></div>${button('提交查找','submitRecovery()')}`)}
+    function submitRecovery(){if(!/^\d{8,30}$/.test($('orderid').value.trim())){$('formerror').textContent='请输入正确的订单号';return}recovered=true;closeModal();render();toast('已提交查找，尚未确认订单及返现资格')}
+    function orderDetail(){modal('订单详情',`${product()}${kv('订单状态','已付款')}${kv('订单编号','2026••••01')}${kv('支付金额','¥29.99')}${kv('预计返现','¥29.98')}<p class="note">返现预计在订单结算后到账</p>`)}
+    function newcomer(){modal('新人1元购','<p>符合新人资格的用户可挑选专享商品。</p>')}
+    function checkin(){if(claimed){modal('每日打卡','<p>今日已领取购物补贴，明天可再来打卡。</p>');return}modal('每日打卡',`<p>打卡领取随机购物补贴，金额领取后揭晓。</p>${button('模拟领取补贴','claim()')}`)}
+    function claim(){claimed=true;closeModal();modal('今日补贴领取成功','<p>已领取购物补贴 ¥0.50。</p><p class="sub">符合条件后，与商品返现一起到账。</p>')}
+    function welfare(){return `<section class="card daily-welfare"><h3>打卡领补贴，购物返现叠加省</h3><p class="benefit-intro">每天来美柚打卡，领取随机购物补贴</p><img class="cumulative-proof" src="./checkin-cumulative.svg" alt="累计XX人打卡，累计发放补贴XX元" width="640" height="84"><div class="stack-benefits"><div class="benefit-unit"><span class="benefit-icon cashback">返</span><span><strong>商品返现</strong><small>通过美柚下单</small></span></div><span class="stack-plus">＋</span><div class="benefit-unit"><span class="benefit-icon subsidy">补</span><span><strong>打卡补贴</strong><small>每日可领取</small></span></div></div><div class="stack-result">符合条件后，返现与补贴一起到账</div>${button('去打卡领补贴','checkin()')}<p class="habit-cue">下次购物前，先来美柚查返现</p></section>`}
+    function returnGuide(){return `<section class="card return-guide"><h3>返现与补贴路径教程</h3><div class="tutorial-block"><div class="tutorial-title"><strong>查返现进度</strong><span>查看订单返现状态</span></div><img src="./guide-refund-progress.svg" alt="查返现进度三步教程：打开美柚App，点击返现，打开我的订单" width="660" height="210"></div><div class="tutorial-block"><div class="tutorial-title"><strong>每天领补贴</strong><span>每天可进入领取</span></div><img src="./guide-daily-subsidy.svg" alt="每天领补贴三步教程：打开美柚App，点击返现，点击领现金" width="660" height="210"></div></section>`}
+    function querying(){return `<div class="card query-card"><div class="state-hero"><div class="state-mark loading"></div><h2>订单查询中</h2><p class="query-timing">下单后，预计在<span id="query-countdown">${remaining()}</span>秒内获得查询结果</p><p class="query-reason">大促期间，淘宝订单同步可能会延迟</p></div><div class="ticker" id="ticker">陈**已下单，预计返现9.90元</div><div class="query-purchase"><span>还没下单？</span>${button('继续去下单 ›','continueOrder()','link')}</div></div>${welfare()}${returnGuide()}`}
+    function missing(){return `<div class="card order-empty"><div class="empty-heading"><span class="status-dot" aria-hidden="true"></span><h2>${recovered?'正在找回订单':'暂未查到订单'}</h2></div><p class="sub">${recovered?'申请已提交，请稍后查看':'尚未下单，或订单仍在同步中'}</p>${product()}${button(recovered?'查找处理中':'继续下单','continueOrder()','primary',recovered)}<div class="recovery-line"><span>${recovered?'需要帮助？':'已经付款？'}</span>${button(recovered?'联系客服':'找回订单',recovered?'help()':'recover()','link')}</div></div><section class="switch-offer"><div class="switch-heading"><h3>想换件商品？</h3><span>看看其他福利</span></div><button class="switch-product" onclick="newcomer()"><div class="product-art"><div class="pack">日用好物<span>DAILY CARE</span></div></div><span><span class="mini-tag">新人专享</span><strong>N件好物1元购</strong><small>纸巾 · 湿巾 · 卫生巾</small></span><span class="offer-arrow">去挑选 ›</span></button></section>${welfare()}${returnGuide()}`}
+    function help(){modal('订单问题反馈','<p>请核对订单商品、付款状态和下单账号。</p>')}
+    function success(){return `<div class="card cashback-card"><h3>预计返现29.98元</h3><div class="cashback-panel"><div class="arrival-date">预计订单结算后到账</div><div class="cashback-track"><div class="track-line"><i></i></div><span class="track-node first">−</span><span class="track-node middle">✓</span><span class="track-node last">¥</span><span class="cash-coin" aria-hidden="true">¥</span></div><div class="track-labels"><span>通过美柚下单</span><span>支付成功</span><span>返现到账</span></div></div><button class="view-order" onclick="orderDetail()">查看订单 <span>›</span></button></div>${welfare()}${returnGuide()}`}
+    function positionNotes(){
+      const notes=$('module-notes');
+      const first=$('screen').firstElementChild;
+      const marketing=first?.nextElementSibling;
+      if(!first||!marketing)return;
+      const origin=notes.getBoundingClientRect().top;
+      $('functional-note').style.top=`${Math.round(first.getBoundingClientRect().top-origin)}px`;
+      $('marketing-note').style.top=`${Math.round(marketing.getBoundingClientRect().top-origin)}px`;
+    }
+    function render(){
+      $('navigation').innerHTML=names.map((name,index)=>`<button class="scene-tab ${scene===index?'active':''}" ${scene===index?'aria-current="step"':''} onclick="show(${index})"><span>场景${['一','二','三'][index]}：</span>${name}</button>`).join('');
+      $('screen').innerHTML=[querying,missing,success][scene]();
+      const actions=scene===0?[['识别到订单','show(2)'],['查询超时','show(1)'],['查询服务异常',"toast('查询暂时失败，请稍后重试')"]]:scene===1?[['后续识别到订单','show(2)'],['重新查询','startQuery()']]:[['重新查询','startQuery()']];
+      $('controls').innerHTML=actions.map(([label,action])=>button(label,action,'control')).join('');
+      requestAnimationFrame(positionNotes);
+    }
+    window.addEventListener('resize',positionNotes);
+    setInterval(()=>{if(scene!==0)return;const label=$('query-countdown');if(label)label.textContent=remaining();if(remaining()===0){scene=1;render()}},250);
+    setInterval(()=>{const ticker=$('ticker');if(!ticker)return;tickerIndex=(tickerIndex+1)%3;ticker.textContent=['陈**已下单，预计返现9.90元','王**已下单，预计返现2.88元','李**已下单，预计返现5.20元'][tickerIndex]},4500);
+    render();
+  </script>
+</body>
+</html>
