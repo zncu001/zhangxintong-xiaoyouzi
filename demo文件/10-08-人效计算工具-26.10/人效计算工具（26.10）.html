@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>离线人效计算-预估小工具</title>
+  <style>
+    :root {
+      --page: #f4f6fa;
+      --paper: #ffffff;
+      --ink: #17243a;
+      --muted: #64748b;
+      --line: #e3e9f1;
+      --blue: #315fca;
+      --blue-soft: #edf3ff;
+      --teal: #168b83;
+      --danger: #c94545;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--page);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 3px solid #a6c5ff;
+      outline-offset: 2px;
+    }
+    .page-shell { width: min(1200px, calc(100% - 48px)); margin: 0 auto; }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      min-height: 176px;
+      padding: 31px 0 35px;
+      color: #fff;
+      background: linear-gradient(112deg, #172b4b 0%, #254b89 69%, #2e67a4 100%);
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      top: -140px;
+      right: max(-110px, calc((100vw - 1270px) / 2));
+      width: 510px;
+      height: 380px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 50%;
+      box-shadow: 0 0 0 70px rgba(255,255,255,.035), 0 0 0 140px rgba(255,255,255,.025);
+      pointer-events: none;
+    }
+    .hero-inner { position: relative; z-index: 1; }
+    .hero-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 10px;
+      color: #dceaff;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.19);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .04em;
+    }
+    .hero-kicker::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #82e3ca; }
+    h1, h2, h3, p { margin: 0; }
+    h1 { margin-top: 14px; font-size: clamp(26px, 3vw, 34px); line-height: 1.25; letter-spacing: -.02em; }
+    .hero p { margin-top: 9px; max-width: 690px; color: #d2def0; font-size: 14px; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(310px, 1fr); gap: 20px; align-items: start; padding: 25px 0 48px; }
+    .main-column, .side-column { min-width: 0; display: grid; gap: 20px; }
+    .panel {
+      min-width: 0;
+      padding: 25px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 30px rgba(28, 53, 87, .045);
+    }
+    .panel-heading { display: flex; align-items: flex-start; gap: 13px; margin-bottom: 22px; }
+    .step {
+      display: grid;
+      place-items: center;
+      flex: 0 0 34px;
+      height: 34px;
+      color: var(--blue);
+      background: var(--blue-soft);
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .02em;
+    }
+    .panel h2 { font-size: 18px; line-height: 1.35; letter-spacing: -.01em; }
+    .panel-subtitle { margin-top: 4px; color: var(--muted); font-size: 12px; }
+    .field-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .field label, .input-label { display: block; margin-bottom: 8px; color: #34445d; font-size: 13px; font-weight: 650; }
+    .field input, textarea {
+      width: 100%;
+      border: 1px solid #d7e0ec;
+      border-radius: 10px;
+      color: var(--ink);
+      background: #fff;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .field input { height: 44px; padding: 0 12px; font-size: 16px; font-weight: 600; }
+    .field input:hover, textarea:hover { border-color: #a9bbd3; }
+    .field input:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(49,95,202,.10); outline: none; }
+    .workday-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 20px;
+      padding: 15px 17px;
+      border: 1px solid #dbe9f2;
+      border-radius: 12px;
+      background: #f5f9fc;
+    }
+    .workday-caption { color: var(--muted); font-size: 12px; }
+    .workday-formula { margin-top: 2px; color: #496178; font-size: 12px; }
+    .workday-actions { display: flex; align-items: center; gap: 16px; white-space: nowrap; }
+    .workday-value { color: var(--teal); font-size: 27px; font-weight: 750; font-variant-numeric: tabular-nums; letter-spacing: -.04em; }
+    .workday-value small { margin-left: 3px; color: #4a6e6b; font-size: 13px; font-weight: 600; letter-spacing: 0; }
+    .button-secondary {
+      height: 36px;
+      padding: 0 12px;
+      color: var(--blue);
+      background: #fff;
+      border: 1px solid #c9d9f5;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .button-secondary:hover { background: var(--blue-soft); }
+    .syntax-help {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      background: #f5f8fd;
+      border: 1px solid #e1e9f4;
+      border-radius: 10px;
+      color: #50637e;
+      font-size: 12px;
+    }
+    .syntax-help strong { flex: 0 0 auto; color: #355d9c; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .syntax-help code, .template-card code, .history-input, .detail-input code { overflow-wrap: anywhere; word-break: break-word; }
+    textarea {
+      display: block;
+      min-height: 112px;
+      padding: 13px 14px;
+      resize: vertical;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    textarea::placeholder { color: #9aa8b9; }
+    .input-foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; align-items: center; }
+    .input-tip { color: #8694a7; font-size: 12px; }
+    .button-primary {
+      min-height: 42px;
+      padding: 0 20px;
+      color: #fff;
+      background: var(--blue);
+      border: 1px solid var(--blue);
+      border-radius: 9px;
+      box-shadow: 0 6px 14px rgba(49,95,202,.16);
+      font-size: 14px;
+      font-weight: 700;
+      transition: transform .18s, background .18s, box-shadow .18s;
+    }
+    .button-primary:hover { transform: translateY(-1px); background: #244fae; box-shadow: 0 8px 18px rgba(49,95,202,.20); }
+    .table-wrap { width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: 11px; }
+    .workload-table { width: 100%; min-width: 510px; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    .workload-table th, .workload-table td { height: 39px; padding: 8px 14px; border-bottom: 1px solid #e8edf4; }
+    .workload-table thead th { color: #61738c; background: #f5f8fc; font-size: 12px; font-weight: 700; text-align: center; }
+    .workload-table thead th:first-child, .workload-table tbody th { text-align: left; }
+    .workload-table tbody th { color: #30415c; font-weight: 650; white-space: nowrap; }
+    .workload-table tbody td { color: #354760; text-align: center; }
+    .workload-table tbody tr:nth-child(even) { background: #fbfcfe; }
+    .workload-table tbody tr:last-child th, .workload-table tbody tr:last-child td { border-bottom: 0; }
+    .workload-table tbody tr:hover { background: #f0f6ff; }
+    .formula-note { margin-top: 13px; color: #708096; font-size: 12px; }
+    .side-column .panel { padding: 22px; }
+    .side-column .panel-heading { margin-bottom: 16px; }
+    .side-column .panel h2 { font-size: 16px; }
+    .result-empty { display: grid; place-items: center; min-height: 198px; text-align: center; color: #8795a8; }
+    .result-empty-symbol { display: grid; place-items: center; width: 52px; height: 52px; margin: 0 auto 13px; border-radius: 16px; color: #6780aa; background: #edf3fb; font-size: 25px; font-weight: 650; }
+    .result-empty p { font-size: 13px; }
+    .result-success { padding: 19px 20px 17px; border: 1px solid #cbdcfb; border-radius: 13px; background: linear-gradient(145deg, #f2f7ff, #fff 73%); }
+    .result-label { color: #557095; font-size: 12px; font-weight: 700; }
+    .result-number { margin-top: 5px; color: #2456ba; font-size: clamp(38px, 4vw, 48px); line-height: 1.1; font-weight: 800; letter-spacing: -.055em; font-variant-numeric: tabular-nums; }
+    .result-caption { margin-top: 8px; color: #8191a6; font-size: 12px; }
+    .result-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-top: 13px; }
+    .stat { padding: 11px 12px; background: #f7f9fc; border: 1px solid #edf1f6; border-radius: 9px; }
+    .stat-label { color: #7b8a9e; font-size: 11px; }
+    .stat-value { margin-top: 2px; color: #283b55; font-size: 16px; font-weight: 750; font-variant-numeric: tabular-nums; }
+    .result-error { padding: 18px; border: 1px solid #f3d6d6; border-radius: 11px; background: #fff7f7; color: var(--danger); }
+    .result-error strong { display: block; margin-bottom: 4px; }
+    .result-error span { color: #865656; font-size: 12px; }
+    .template-list, .history-list { display: grid; gap: 9px; }
+    .template-card, .history-item {
+      width: 100%;
+      padding: 12px 13px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fafbfd;
+      color: #40526b;
+      text-align: left;
+      transition: border-color .18s, background .18s;
+    }
+    .template-card:hover, .history-item:hover { border-color: #a9c2ed; background: #f4f8ff; }
+    .template-title { display: block; margin-bottom: 5px; color: #315582; font-size: 12px; font-weight: 750; }
+    .template-card code { display: block; color: #60728c; font-size: 11px; line-height: 1.55; }
+    .history-list { max-height: 280px; overflow-y: auto; }
+    .history-empty { padding: 16px 0; text-align: center; color: #9aa7b8; font-size: 12px; }
+    .history-top { display: flex; justify-content: space-between; gap: 8px; }
+    .history-input { display: block; color: #53657d; font-size: 11px; line-height: 1.45; }
+    .history-score { flex: 0 0 auto; color: var(--blue); font-size: 14px; font-weight: 750; }
+    .history-meta { display: block; margin-top: 5px; color: #99a6b6; font-size: 11px; }
+    .details-panel { grid-column: 1 / -1; }
+    .details-panel[hidden] { display: none; }
+    .detail-input { margin-bottom: 15px; padding: 11px 13px; border: 1px solid #e5eaf2; border-radius: 9px; background: #f8fafd; color: #77879b; font-size: 12px; }
+    .detail-input code { margin-left: 8px; color: #425775; }
+    .detail-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .detail-item { padding: 13px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+    .detail-name { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700; }
+    .grade { display: inline-grid; place-items: center; min-width: 21px; height: 21px; border-radius: 6px; color: #fff; font-size: 11px; font-weight: 800; }
+    .grade-S { background: #bd5860; } .grade-A { background: #bc8433; } .grade-B { background: #2b8c83; } .grade-C { background: #5276b6; }
+    .detail-math { margin-top: 8px; color: #77879b; font-size: 12px; font-variant-numeric: tabular-nums; }
+    .detail-total { display: flex; justify-content: flex-end; gap: 14px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); color: #53657b; font-size: 13px; }
+    .detail-total strong { color: var(--blue); font-size: 16px; }
+    @media (max-width: 920px) {
+      .workspace { grid-template-columns: 1fr; }
+      .detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 620px) {
+      .page-shell { width: min(100% - 28px, 1200px); }
+      .hero { min-height: 160px; padding: 25px 0 30px; }
+      .hero p { font-size: 12px; line-height: 1.65; }
+      .workspace, .main-column, .side-column { gap: 14px; }
+      .workspace { padding-top: 16px; }
+      .panel, .side-column .panel { padding: 18px; border-radius: 15px; }
+      .panel-heading { margin-bottom: 18px; }
+      .field-grid { grid-template-columns: 1fr; gap: 12px; }
+      .workday-bar { align-items: flex-start; flex-direction: column; }
+      .workday-actions { width: 100%; justify-content: space-between; }
+      .syntax-help { display: block; }
+      .syntax-help strong { display: block; margin-bottom: 4px; }
+      .input-foot { align-items: stretch; flex-direction: column; }
+      .button-primary { width: 100%; }
+      .detail-grid { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="page-shell hero-inner">
+      <span class="hero-kicker">离线预估工具</span>
+      <h1>人效计算</h1>
+      <p>根据出勤工作日、交付物等级和人力投入，预估个人产出效率。结果仅供计划参考，最终以系统统计为准。</p>
+    </div>
+  </header>
+
+  <main class="page-shell workspace">
+    <div class="main-column">
+      <section class="panel" aria-labelledby="workdayTitle">
+        <div class="panel-heading">
+          <span class="step" aria-hidden="true">01</span>
+          <div><h2 id="workdayTitle">出勤工作日</h2><p class="panel-subtitle">填写本期工时，自动换算出勤天数</p></div>
+        </div>
+        <div class="field-grid">
+          <div class="field"><label for="totalHours">应出勤工时（小时）</label><input type="number" id="totalHours" value="174" min="0" step="any" inputmode="decimal"></div>
+          <div class="field"><label for="leaveHours">请假工时（小时）</label><input type="number" id="leaveHours" value="0" min="0" step="any" inputmode="decimal"></div>
+          <div class="field"><label for="overtimeHours">申报加班工时（小时）</label><input type="number" id="overtimeHours" value="0" min="0" step="any" inputmode="decimal"></div>
+        </div>
+        <div class="workday-bar">
+          <div><div class="workday-caption">出勤工作日</div><div class="workday-formula">（应出勤 − 请假 + 加班）÷ 8</div></div>
+          <div class="workday-actions">
+            <div class="workday-value" id="workdaysResult"><span id="workdaysValue">21.75</span><small>天</small></div>
+            <button class="button-secondary" id="calcWorkdaysBtn" type="button">重新计算</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="inputTitle">
+        <div class="panel-heading">
+          <span class="step" aria-hidden="true">02</span>
+          <div><h2 id="inputTitle">输入交付数据</h2><p class="panel-subtitle">按交付物类型、等级和数量填写，使用英文逗号分隔</p></div>
+        </div>
+        <div class="syntax-help"><strong>格式示例</strong><code>{人力,0.5,需求文档,S5,A2,B3,成效分析文档,S1}</code></div>
+        <label class="input-label" for="inputData">计算数据</label>
+        <textarea id="inputData" rows="4" placeholder="请输入：{人力,0.5,需求文档,S5,A2,B3,成效分析文档,S1}"></textarea>
+        <div class="input-foot"><span class="input-tip">人力须大于 0；等级支持 S、A、B、C</span><button class="button-primary" id="calculateBtn" type="button">计算人效</button></div>
+      </section>
+
+      <section class="panel" aria-labelledby="standardsTitle">
+        <div class="panel-heading">
+          <span class="step" aria-hidden="true">03</span>
+          <div><h2 id="standardsTitle">标准工时定义</h2><p class="panel-subtitle">每份交付物对应的标准工时，单位：天</p></div>
+        </div>
+        <div class="table-wrap">
+          <table class="workload-table">
+            <thead><tr><th scope="col">交付物</th><th scope="col">S</th><th scope="col">A</th><th scope="col">B</th><th scope="col">C</th></tr></thead>
+            <tbody id="workloadTableBody"></tbody>
+          </table>
+        </div>
+        <p class="formula-note">计算口径：交付工时合计 ÷ 出勤工作日 × 161.8 ÷ 人力</p>
+      </section>
+    </div>
+
+    <aside class="side-column" aria-label="计算结果与辅助操作">
+      <section class="panel" aria-labelledby="resultTitle">
+        <div class="panel-heading"><span class="step" aria-hidden="true">↗</span><div><h2 id="resultTitle">计算结果</h2><p class="panel-subtitle">点击计算后显示预估结果</p></div></div>
+        <div id="resultArea" aria-live="polite"><div class="result-empty"><div><div class="result-empty-symbol">∑</div><p>填写交付数据后，点击“计算人效”</p></div></div></div>
+      </section>
+      <section class="panel" aria-labelledby="templateTitle">
+        <div class="panel-heading"><span class="step" aria-hidden="true">⌁</span><div><h2 id="templateTitle">快速模板</h2><p class="panel-subtitle">点击模板，填入左侧输入框</p></div></div>
+        <div class="template-list">
+          <button class="template-card" type="button" data-template="{人力,1.0,需求文档,S2,A3,调研文档,B5,成效分析文档,B1,异常分析文档,B1}"><span class="template-title">示例数据</span><code>{人力,1.0,需求文档,S2,A3,调研文档,B5,成效分析文档,B1,异常分析文档,B1}</code></button>
+          <button class="template-card" type="button" data-template="{人力,1.0,需求文档,A1,B1,C3,调研文档,B5,业务盘点,B1,成效分析文档,B1}"><span class="template-title">需求与调研示例</span><code>{人力,1.0,需求文档,A1,B1,C3,调研文档,B5,业务盘点,B1,成效分析文档,B1}</code></button>
+          <button class="template-card" type="button" data-template="{人力,1,调研文档,S1,业务盘点,A1,需求文档,B1,AI交付物,C1,评测报告,S1,评测方案设计,A1,项目执行规范,B1,成效分析文档,S1,异常分析文档,C1}"><span class="template-title">全部类型示例</span><code>{人力,1,调研文档,S1,业务盘点,A1,需求文档,B1,AI交付物,C1,评测报告,S1,评测方案设计,A1,项目执行规范,B1,成效分析文档,S1,异常分析文档,C1}</code></button>
+        </div>
+      </section>
+      <section class="panel" aria-labelledby="historyTitle">
+        <div class="panel-heading"><span class="step" aria-hidden="true">↺</span><div><h2 id="historyTitle">计算历史</h2><p class="panel-subtitle">最近 10 次计算</p></div></div>
+        <div class="history-list" id="historyList"></div>
+      </section>
+    </aside>
+
+    <section class="panel details-panel" id="detailSection" aria-labelledby="detailTitle" hidden>
+      <div class="panel-heading"><span class="step" aria-hidden="true">∑</span><div><h2 id="detailTitle">计算详情</h2><p class="panel-subtitle">逐项核对交付物及标准工时</p></div></div>
+      <div id="detailContent"></div>
+    </section>
+  </main>
+
+  <script>
+    const WORKLOAD_CONFIG = {
+      '调研文档': { S: 4, A: 2, B: 1, C: 0.5 },
+      '业务盘点': { S: 7, A: 4, B: 2, C: 0.5 },
+      '需求文档': { S: 7, A: 4, B: 2, C: 0.5 },
+      'AI交付物': { S: 12, A: 6, B: 3, C: 0.5 },
+      '评测报告': { S: 4, A: 2, B: 1, C: 0.5 },
+      '评测方案设计': { S: 12, A: 8, B: 4, C: 2 },
+      '项目执行规范': { S: 5, A: 3, B: 1, C: 0.5 },
+      '成效分析文档': { S: 3, A: 2, B: 1, C: 0.5 },
+      '异常分析文档': { S: 5, A: 3, B: 1, C: 0.5 }
+    };
+    const CALCULATION_FACTOR = 161.8;
+    const HISTORY_STORAGE_KEY = 'efficiencyHistory-newWorkload';
+
+    class EfficiencyCalculator {
+      constructor() {
+        this.history = this.loadHistory();
+        this.workdays = 21.75;
+        this.bindEvents();
+        this.renderWorkloadTable();
+        this.renderHistory();
+        this.calculateWorkdays();
+      }
+
+      loadHistory() {
+        try {
+          const stored = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY));
+          return Array.isArray(stored) ? stored.slice(0, 10) : [];
+        } catch (_) { return []; }
+      }
+
+      bindEvents() {
+        document.getElementById('calculateBtn').addEventListener('click', () => this.calculate());
+        document.getElementById('calcWorkdaysBtn').addEventListener('click', () => this.calculateWorkdays());
+        ['totalHours', 'leaveHours', 'overtimeHours'].forEach(id => {
+          document.getElementById(id).addEventListener('input', () => this.calculateWorkdays());
+        });
+        document.querySelectorAll('.template-card').forEach(button => {
+          button.addEventListener('click', () => {
+            const input = document.getElementById('inputData');
+            input.value = button.dataset.template;
+            input.focus();
+          });
+        });
+        document.getElementById('inputData').addEventListener('keydown', event => {
+          if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') this.calculate();
+        });
+      }
+
+      renderWorkloadTable() {
+        const body = document.getElementById('workloadTableBody');
+        Object.entries(WORKLOAD_CONFIG).forEach(([name, grades]) => {
+          const row = document.createElement('tr');
+          const heading = document.createElement('th');
+          heading.scope = 'row';
+          heading.textContent = name;
+          row.append(heading);
+          ['S', 'A', 'B', 'C'].forEach(level => {
+            const cell = document.createElement('td');
+            cell.textContent = String(grades[level]);
+            row.append(cell);
+          });
+          body.append(row);
+        });
+      }
+
+      calculateWorkdays() {
+        const values = ['totalHours', 'leaveHours', 'overtimeHours'].map(id => Number(document.getElementById(id).value));
+        const [total, leave, overtime] = values;
+        const hours = total - leave + overtime;
+        const valid = values.every(value => Number.isFinite(value) && value >= 0) && hours > 0;
+        this.workdays = valid ? hours / 8 : NaN;
+        document.getElementById('workdaysValue').textContent = valid ? this.workdays.toFixed(2) : '—';
+        return this.workdays;
+      }
+
+      parseInput(input) {
+        const text = input.trim();
+        if (!text.startsWith('{') || !text.endsWith('}')) throw new Error('输入须以 { 开头、以 } 结尾');
+        const parts = text.slice(1, -1).split(',').map(item => item.trim()).filter(Boolean);
+        if (parts.length < 4 || parts[0] !== '人力') throw new Error('请按示例填写人力、交付物和等级数量');
+        const manpower = Number(parts[1]);
+        if (!Number.isFinite(manpower) || manpower <= 0) throw new Error('人力须为大于 0 的数字');
+        const documents = {};
+        let currentType = '';
+        for (const part of parts.slice(2)) {
+          if (Object.prototype.hasOwnProperty.call(WORKLOAD_CONFIG, part)) {
+            currentType = part;
+            documents[currentType] = documents[currentType] || {};
+            continue;
+          }
+          const match = part.match(/^([SABC])(\d+(?:\.\d+)?)$/);
+          if (!match) throw new Error(`不支持的交付物或等级数量：${part}`);
+          if (!currentType) throw new Error('请先填写交付物类型，再填写等级数量');
+          const [, level, number] = match;
+          documents[currentType][level] = (documents[currentType][level] || 0) + Number(number);
+        }
+        if (Object.values(documents).some(levels => Object.keys(levels).length === 0)) throw new Error('每种交付物至少需要填写一个等级数量');
+        return { manpower, documents };
+      }
+
+      calculateEfficiency(data) {
+        if (!Number.isFinite(this.workdays) || this.workdays <= 0) throw new Error('出勤工作日须大于 0，请检查工时');
+        const details = [];
+        let baseWorkload = 0;
+        for (const [docType, levels] of Object.entries(data.documents)) {
+          for (const [level, count] of Object.entries(levels)) {
+            const workloadPerItem = WORKLOAD_CONFIG[docType][level];
+            const workload = workloadPerItem * count;
+            baseWorkload += workload;
+            details.push({ docType, level, count, workloadPerItem, workload });
+          }
+        }
+        return {
+          efficiency: baseWorkload / this.workdays * CALCULATION_FACTOR / data.manpower,
+          baseWorkload, details, manpower: data.manpower, workdays: this.workdays
+        };
+      }
+
+      calculate() {
+        const input = document.getElementById('inputData').value;
+        try {
+          if (!input.trim()) throw new Error('请输入计算数据');
+          this.calculateWorkdays();
+          const result = this.calculateEfficiency(this.parseInput(input));
+          this.displayResult(result, input);
+          this.saveToHistory(result, input);
+        } catch (error) {
+          this.showError(error.message);
+        }
+      }
+
+      displayResult(result, input) {
+        const area = document.getElementById('resultArea');
+        area.innerHTML = `
+          <div class="result-success">
+            <div class="result-label">预估人效指数</div>
+            <div class="result-number">${result.efficiency.toFixed(2)}</div>
+            <div class="result-caption">按当前交付数据和出勤工作日计算</div>
+          </div>
+          <div class="result-stats">
+            <div class="stat"><div class="stat-label">交付工时</div><div class="stat-value">${result.baseWorkload.toFixed(2)} 天</div></div>
+            <div class="stat"><div class="stat-label">人力投入</div><div class="stat-value">${result.manpower}</div></div>
+            <div class="stat"><div class="stat-label">出勤工作日</div><div class="stat-value">${result.workdays.toFixed(2)} 天</div></div>
+            <div class="stat"><div class="stat-label">计算系数</div><div class="stat-value">${CALCULATION_FACTOR}</div></div>
+          </div>`;
+
+        const section = document.getElementById('detailSection');
+        const content = document.getElementById('detailContent');
+        content.replaceChildren();
+        const original = document.createElement('div');
+        original.className = 'detail-input';
+        original.textContent = '原始输入：';
+        const code = document.createElement('code');
+        code.textContent = input;
+        original.append(code);
+        content.append(original);
+        const grid = document.createElement('div');
+        grid.className = 'detail-grid';
+        result.details.forEach(detail => {
+          const item = document.createElement('div');
+          item.className = 'detail-item';
+          const name = document.createElement('div');
+          name.className = 'detail-name';
+          name.append(document.createTextNode(detail.docType));
+          const grade = document.createElement('span');
+          grade.className = `grade grade-${detail.level}`;
+          grade.textContent = detail.level;
+          name.append(grade);
+          const math = document.createElement('div');
+          math.className = 'detail-math';
+          math.textContent = `${detail.count} × ${detail.workloadPerItem} 天 = ${detail.workload.toFixed(2)} 天`;
+          item.append(name, math);
+          grid.append(item);
+        });
+        content.append(grid);
+        const total = document.createElement('div');
+        total.className = 'detail-total';
+        total.innerHTML = `<span>交付工时合计</span><strong>${result.baseWorkload.toFixed(2)} 天</strong>`;
+        content.append(total);
+        section.hidden = false;
+      }
+
+      showError(message) {
+        const area = document.getElementById('resultArea');
+        area.replaceChildren();
+        const box = document.createElement('div');
+        box.className = 'result-error';
+        const title = document.createElement('strong');
+        title.textContent = '无法计算';
+        const reason = document.createElement('span');
+        reason.textContent = message;
+        box.append(title, reason);
+        area.append(box);
+        document.getElementById('detailSection').hidden = true;
+      }
+
+      saveToHistory(result, input) {
+        const hours = {};
+        ['totalHours', 'leaveHours', 'overtimeHours'].forEach(id => {
+          hours[id] = document.getElementById(id).value;
+        });
+        this.history.unshift({ input, hours, result: result.efficiency, workdays: result.workdays, timestamp: new Date().toLocaleString('zh-CN') });
+        this.history = this.history.slice(0, 10);
+        try { localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(this.history)); } catch (_) { /* file:// 可继续在当前页面使用 */ }
+        this.renderHistory();
+      }
+
+      restoreHistoryItem(item) {
+        const field = document.getElementById('inputData');
+        field.value = item.input;
+        const hourIds = ['totalHours', 'leaveHours', 'overtimeHours'];
+        if (item.hours && hourIds.every(id => Number.isFinite(Number(item.hours[id])) && Number(item.hours[id]) >= 0)) {
+          hourIds.forEach(id => { document.getElementById(id).value = item.hours[id]; });
+          this.calculateWorkdays();
+        }
+        field.focus();
+      }
+
+      renderHistory() {
+        const list = document.getElementById('historyList');
+        list.replaceChildren();
+        if (this.history.length === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'history-empty';
+          empty.textContent = '暂无历史记录';
+          list.append(empty);
+          return;
+        }
+        this.history.forEach(item => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'history-item';
+          const top = document.createElement('span');
+          top.className = 'history-top';
+          const input = document.createElement('code');
+          input.className = 'history-input';
+          input.textContent = item.input;
+          const score = document.createElement('span');
+          score.className = 'history-score';
+          score.textContent = Number(item.result).toFixed(2);
+          top.append(input, score);
+          const meta = document.createElement('span');
+          meta.className = 'history-meta';
+          const hoursText = item.hours ? ` · 应出勤 ${item.hours.totalHours} 小时` : ' · 旧记录未保存原始工时';
+          meta.textContent = `${item.timestamp} · ${Number(item.workdays).toFixed(1)} 天${hoursText}`;
+          button.append(top, meta);
+          button.addEventListener('click', () => this.restoreHistoryItem(item));
+          list.append(button);
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => new EfficiencyCalculator());
+  </script>
+</body>
+</html>
